@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"os"
+	"restaurant-management/models"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -25,7 +26,16 @@ func GormInitialize() *gorm.DB {
 		panic("failed to connect database")
 	}
 
-	db.AutoMigrate()
+	db.AutoMigrate(
+		&model.User{},
+		&model.Order{},
+		&model.OrderItem{},
+		&model.Food{},
+		&model.Invoice{},
+		&model.Menu{},
+		&model.Note{},
+		&model.Table{},
+	)
 
 	return db
 }
