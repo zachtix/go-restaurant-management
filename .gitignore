@@ -1,0 +1,40 @@
+# Environment
+.env
+.env.local
+*.env
+
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+go-restaurant-management
+main
+/bin/
+/build/
+/dist/
+
+# Test & coverage
+*.test
+*.out
+coverage.*
+
+# Go workspace
+go.work
+go.work.sum
+
+# Dependencies
+vendor/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
