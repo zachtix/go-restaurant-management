@@ -28,13 +28,17 @@ func GenerateJWT(user model.User, secret string, hour uint) (string, error) {
 	return string(t), nil
 }
 
-func verifyJWT(token string, secret string) error {
-	_, err := jwt.ParseWithClaims(token, &jwt.MapClaims{}, func(t *jwt.Token) (interface{}, error) {
+func VerifyJWT(token string, secret string) (jwt.MapClaims, error) {
+	claims := jwt.MapClaims{}
+	_, err := jwt.ParseWithClaims(token, &claims, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method")
 		}
 		return []byte(secret), nil
 	})
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	return claims, nil
 }

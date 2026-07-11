@@ -1,15 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
-	// "restaurant-management/controller"
+	"restaurant-management/controllers"
 	"restaurant-management/database"
-	// "restaurant-management/helper"
-	// "restaurant-management/middleware"
-	// "restaurant-management/models"
 	"restaurant-management/routes"
 
 	"github.com/gofiber/fiber/v3"
@@ -30,11 +26,11 @@ func main() {
 func SetupFiber() *fiber.App {
 	db := database.GormInitialize()
 
-	fmt.Print(db)
+	h := &controller.Controller{DB: db}
 
 	app := fiber.New()
 
-	route.UserRoute(app)
+	route.UserRoute(app, h)
 	route.FoodRoute(app)
 	route.OrderRoute(app)
 	route.OrderItemRoute(app)

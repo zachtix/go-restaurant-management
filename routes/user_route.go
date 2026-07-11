@@ -2,15 +2,17 @@ package route
 
 import (
 	"restaurant-management/controllers"
+	"restaurant-management/middleware"
 
 	"github.com/gofiber/fiber/v3"
 )
 
-func UserRoute(app *fiber.App) {
+func UserRoute(app *fiber.App, h *controller.Controller) {
 	auth := app.Group("/auth")
 	user := app.Group("/users")
-	user.Get("/", controller.GetUsers)
-	user.Get("/:user_id", controller.GetUser)
-	auth.Post("/signup", controller.CreateUser)
-	auth.Post("/signin", controller.LoginUser)
+	user.Use(middleware.Authenticate)
+	user.Get("/", h.GetUsers)
+	user.Get("/:user_id", h.GetUser)
+	auth.Post("/signup", h.CreateUser)
+	auth.Post("/signin", h.LoginUser)
 }
