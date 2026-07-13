@@ -48,6 +48,14 @@ func (h *Controller) CreateFood(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
+	ok, err := h.MenuIDExists(food.Menu_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+	if !ok {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "menu id not found"})
+	}
+
 	result := h.DB.Create(&food)
 	if result.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": result.Error.Error()})
@@ -68,6 +76,14 @@ func (h *Controller) UpdateFood(c fiber.Ctx) error {
 	}
 	if err := validate.Struct(&food); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	ok, err := h.MenuIDExists(food.Menu_id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+	if !ok {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "menu id not found"})
 	}
 
 	var selectedFood model.Food
