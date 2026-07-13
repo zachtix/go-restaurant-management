@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"restaurant-management/controllers"
+	controller "restaurant-management/controllers"
 	"restaurant-management/database"
-	"restaurant-management/routes"
+	route "restaurant-management/routes"
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/joho/godotenv"
@@ -31,7 +31,7 @@ func SetupFiber() *fiber.App {
 	app := fiber.New()
 
 	route.UserRoute(app, h)
-	route.FoodRoute(app)
+	route.FoodRoute(app, h)
 	route.OrderRoute(app)
 	route.OrderItemRoute(app)
 	route.MenuRoute(app)
