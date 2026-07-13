@@ -1,14 +1,16 @@
 package route
 
 import (
+	controller "restaurant-management/controllers"
+
 	"github.com/gofiber/fiber/v3"
-	"restaurant-management/controllers"
 )
 
-func TableRoute(app *fiber.App) {
+func TableRoute(app *fiber.App, h *controller.Controller) {
 	table := app.Group("/tables")
-	table.Get("", controller.GetTables)
-	table.Get("/:table_id", controller.GetTable)
-	table.Post("", controller.CreateTable)
-	table.Patch("/:table_id", controller.UpdateTable)
+	table.Get("", h.GetTables)
+	table.Get("/:table_id", h.GetTable)
+	table.Post("", h.CreateTable)
+	table.Patch("/:table_id", h.UpdateTable)
+	table.Delete("/:table_id", h.DeleteTable)
 }

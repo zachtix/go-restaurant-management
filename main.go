@@ -35,7 +35,7 @@ func SetupFiber() *fiber.App {
 	route.OrderRoute(app)
 	route.OrderItemRoute(app)
 	route.MenuRoute(app, h)
-	route.TableRoute(app)
+	route.TableRoute(app, h)
 	route.InvoiceRoute(app)
 
 	app.Use(func(c fiber.Ctx) error {
