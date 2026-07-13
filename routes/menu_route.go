@@ -1,14 +1,16 @@
 package route
 
 import (
+	controller "restaurant-management/controllers"
+
 	"github.com/gofiber/fiber/v3"
-	"restaurant-management/controllers"
 )
 
-func MenuRoute(app *fiber.App) {
+func MenuRoute(app *fiber.App, h *controller.Controller) {
 	menu := app.Group("/menus")
-	menu.Get("", controller.GetMenus)
-	menu.Get("/:menu_id", controller.GetMenu)
-	menu.Post("", controller.CreateMenu)
-	menu.Patch("/:menu_id", controller.UpdateMenu)
+	menu.Get("", h.GetMenus)
+	menu.Get("/:menu_id", h.GetMenu)
+	menu.Post("", h.CreateMenu)
+	menu.Patch("/:menu_id", h.UpdateMenu)
+	menu.Delete("/:menu_id", h.DeleteMenu)
 }
