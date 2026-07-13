@@ -5,12 +5,9 @@ import (
 	model "restaurant-management/models"
 	"strconv"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
 )
-
-var validate = validator.New()
 
 func (h *Controller) GetFoods(c fiber.Ctx) error {
 	var foods []model.Food

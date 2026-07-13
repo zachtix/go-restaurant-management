@@ -38,5 +38,9 @@ func SetupFiber() *fiber.App {
 	route.TableRoute(app)
 	route.InvoiceRoute(app)
 
+	app.Use(func(c fiber.Ctx) error {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "not found"})
+	})
+
 	return app
 }
