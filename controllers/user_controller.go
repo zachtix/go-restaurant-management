@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"errors"
 	"os"
 	"restaurant-management/helper"
-	"restaurant-management/models"
+	model "restaurant-management/models"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
+	"gorm.io/gorm"
 )
 
 func (h *Controller) GetUsers(c fiber.Ctx) error {
@@ -24,7 +26,10 @@ func (h *Controller) GetUser(c fiber.Ctx) error {
 	}
 	var user model.User
 	if err := h.DB.First(&user, "id = ?", id).Error; err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "user id not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	return c.JSON(fiber.Map{"message": "ok", "data": user})

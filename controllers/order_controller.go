@@ -11,8 +11,21 @@ import (
 )
 
 func (h *Controller) GetOrders(c fiber.Ctx) error {
+	tableID := fiber.Query[int](c, "table_id")
+	open := fiber.Query[bool](c, "open")
+
+	query := h.DB.Model(&model.Order{})
+	if tableID > 0 {
+		query = query.Where("table_id = ?", tableID)
+	}
+	if open {
+		query = query.Where("id NOT IN (?)",
+			h.DB.Model(&model.Invoice{}).Select("order_id"),
+		)
+	}
+
 	var orders []model.Order
-	if err := h.DB.Find(&orders).Error; err != nil {
+	if err := query.Find(&orders).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
