@@ -1,14 +1,16 @@
 package route
 
 import (
+	controller "restaurant-management/controllers"
+
 	"github.com/gofiber/fiber/v3"
-	"restaurant-management/controllers"
 )
 
-func InvoiceRoute(app *fiber.App) {
+func InvoiceRoute(app *fiber.App, h *controller.Controller) {
 	invoice := app.Group("/invoices")
-	invoice.Get("", controller.GetInvoices)
-	invoice.Get("/:invoice_id", controller.GetInvoice)
-	invoice.Post("", controller.CreateInvoice)
-	invoice.Patch("/:invoice_id", controller.UpdateInvoice)
+	invoice.Get("", h.GetInvoices)
+	invoice.Get("/:invoice_id", h.GetInvoice)
+	invoice.Post("", h.CreateInvoice)
+	invoice.Patch("/:invoice_id", h.UpdateInvoice)
+	invoice.Delete("/:invoice_id", h.DeleteInvoice)
 }
