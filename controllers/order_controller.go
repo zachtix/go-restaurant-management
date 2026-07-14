@@ -4,6 +4,7 @@ import (
 	"errors"
 	model "restaurant-management/models"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
 	"gorm.io/gorm"
@@ -38,6 +39,7 @@ func (h *Controller) CreateOrder(c fiber.Ctx) error {
 	if err := c.Bind().Body(&order); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
+	order.Order_date = time.Now()
 	if err := validate.Struct(&order); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
@@ -67,7 +69,6 @@ func (h *Controller) UpdateOrder(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	selectedOrder.Order_date = order.Order_date
 	selectedOrder.Table_id = order.Table_id
 
 	result := h.DB.Save(&selectedOrder)
