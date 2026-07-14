@@ -33,7 +33,7 @@ func SetupFiber() *fiber.App {
 	route.UserRoute(app, h)
 	route.FoodRoute(app, h)
 	route.OrderRoute(app, h)
-	route.OrderItemRoute(app)
+	route.OrderItemRoute(app, h)
 	route.MenuRoute(app, h)
 	route.TableRoute(app, h)
 	route.InvoiceRoute(app)

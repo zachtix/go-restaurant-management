@@ -1,15 +1,17 @@
 package route
 
 import (
+	controller "restaurant-management/controllers"
+
 	"github.com/gofiber/fiber/v3"
-	"restaurant-management/controllers"
 )
 
-func OrderItemRoute(app *fiber.App) {
+func OrderItemRoute(app *fiber.App, h *controller.Controller) {
 	orderItem := app.Group("/order-items")
-	orderItem.Get("", controller.GetOrderItems)
-	orderItem.Get("/:order_item_id", controller.GetOrderItem)
-	orderItem.Get("/order/:order_id", controller.GetOrderItemByOrder)
-	orderItem.Post("", controller.CreateOrderItem)
-	orderItem.Patch("/:order_item_id", controller.UpdateOrderItem)
+	orderItem.Get("", h.GetOrderItems)
+	orderItem.Get("/:order_item_id", h.GetOrderItem)
+	orderItem.Get("/order/:order_id", h.GetOrderItemByOrder)
+	orderItem.Post("", h.CreateOrderItem)
+	orderItem.Patch("/:order_item_id", h.UpdateOrderItem)
+	orderItem.Delete("/:order_item_id", h.DeleteOrderItem)
 }
