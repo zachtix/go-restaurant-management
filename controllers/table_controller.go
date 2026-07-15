@@ -5,6 +5,7 @@ import (
 	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
+	"restaurant-management/response"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
@@ -22,17 +23,11 @@ func (h *Controller) GetTables(c fiber.Ctx) error {
 	}
 
 	var tables []model.Table
-	if err := h.DB.Find(&tables).Error; err != nil {
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&tables).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
-	return c.JSON(fiber.Map{
-		"message":    "ok",
-		"data":       tables,
-		"page":       p.Page,
-		"limit":      p.Limit,
-		"total":      total,
-		"total_page": totalPage,
-	})
+
+	return response.Paginated(c, tables, p.Page, p.Limit, total, totalPage)
 }
 func (h *Controller) GetTable(c fiber.Ctx) error {
 	table_id, err := strconv.Atoi(c.Params("table_id"))

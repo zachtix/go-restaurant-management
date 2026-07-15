@@ -6,6 +6,7 @@ import (
 	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
+	"restaurant-management/response"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
@@ -23,18 +24,11 @@ func (h *Controller) GetUsers(c fiber.Ctx) error {
 	}
 
 	var users []model.User
-	if err := h.DB.Find(&users).Error; err != nil {
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&users).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{
-		"message":    "ok",
-		"data":       users,
-		"page":       p.Page,
-		"limit":      p.Limit,
-		"total":      total,
-		"total_page": totalPage,
-	})
+	return response.Paginated(c, users, p.Page, p.Limit, total, totalPage)
 }
 func (h *Controller) GetUser(c fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("user_id"))

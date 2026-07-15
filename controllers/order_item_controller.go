@@ -5,6 +5,7 @@ import (
 	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
+	"restaurant-management/response"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
@@ -22,17 +23,11 @@ func (h *Controller) GetOrderItems(c fiber.Ctx) error {
 	}
 
 	var order_items []model.OrderItem
-	if err := h.DB.Limit(p.Limit).Offset(p.Offset).Find(&order_items).Error; err != nil {
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&order_items).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
-	return c.JSON(fiber.Map{
-		"message":    "ok",
-		"data":       order_items,
-		"page":       p.Page,
-		"limit":      p.Limit,
-		"total":      total,
-		"total_page": totalPage,
-	})
+
+	return response.Paginated(c, order_items, p.Page, p.Limit, total, totalPage)
 }
 
 func (h *Controller) GetOrderItem(c fiber.Ctx) error {
@@ -70,14 +65,8 @@ func (h *Controller) GetOrderItemByOrder(c fiber.Ctx) error {
 	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&order_items, "order_id = ?", order_id).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
-	return c.JSON(fiber.Map{
-		"message":    "ok",
-		"data":       order_items,
-		"page":       p.Page,
-		"limit":      p.Limit,
-		"total":      total,
-		"total_page": totalPage,
-	})
+
+	return response.Paginated(c, order_items, p.Page, p.Limit, total, totalPage)
 }
 
 func (h *Controller) CreateOrderItem(c fiber.Ctx) error {

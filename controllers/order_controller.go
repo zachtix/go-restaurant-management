@@ -5,6 +5,7 @@ import (
 	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
+	"restaurant-management/response"
 	"strconv"
 	"time"
 
@@ -38,14 +39,7 @@ func (h *Controller) GetOrders(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{
-		"message":    "ok",
-		"data":       orders,
-		"page":       p.Page,
-		"limit":      p.Limit,
-		"total":      total,
-		"total_page": totalPage,
-	})
+	return response.Paginated(c, orders, p.Page, p.Limit, total, totalPage)
 }
 func (h *Controller) GetOrder(c fiber.Ctx) error {
 	order_id, err := strconv.Atoi(c.Params("order_id"))

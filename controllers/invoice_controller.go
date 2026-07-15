@@ -5,6 +5,7 @@ import (
 	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
+	"restaurant-management/response"
 	"strconv"
 	"time"
 
@@ -26,14 +27,8 @@ func (h *Controller) GetInvoices(c fiber.Ctx) error {
 	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&invoices).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
-	return c.JSON(fiber.Map{
-		"message":    "ok",
-		"data":       invoices,
-		"page":       p.Page,
-		"limit":      p.Limit,
-		"total":      total,
-		"total_page": totalPage,
-	})
+
+	return response.Paginated(c, invoices, p.Page, p.Limit, total, totalPage)
 }
 
 func (h *Controller) GetInvoice(c fiber.Ctx) error {
