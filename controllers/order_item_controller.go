@@ -12,6 +12,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var sizeMultiplier = map[string]float64{
+	"S": 1.0,
+	"M": 1.2,
+	"L": 1.5,
+}
+
 func (h *Controller) GetOrderItems(c fiber.Ctx) error {
 	p := middleware.GetPagination(c)
 
@@ -49,20 +55,22 @@ func (h *Controller) GetOrderItem(c fiber.Ctx) error {
 func (h *Controller) GetOrderItemByOrder(c fiber.Ctx) error {
 	p := middleware.GetPagination(c)
 
+	order_id, err := strconv.Atoi(c.Params("order_id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
+	}
+
 	query := h.DB.Model(&model.OrderItem{})
+
+	query = query.Where("order_id = ?", order_id)
 
 	total, totalPage, err := helper.CountTotal(query, p.Limit)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	order_id, err := strconv.Atoi(c.Params("order_id"))
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
-	}
-
 	var order_items []model.OrderItem
-	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&order_items, "order_id = ?", order_id).Error; err != nil {
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&order_items).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
@@ -95,7 +103,7 @@ func (h *Controller) CreateOrderItem(c fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	order_item.Unit_price = food.Price
+	order_item.Unit_price = food.Price * sizeMultiplier[order_item.Quantity]
 	result := h.DB.Create(&order_item)
 	if result.Error != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": result.Error.Error()})
@@ -125,6 +133,12 @@ func (h *Controller) UpdateOrderItem(c fiber.Ctx) error {
 	}
 
 	selected_order_item.Quantity = order_item.Quantity
+
+	var food model.Food
+	if err := h.DB.First(&food, "id = ?", selected_order_item.Food_id).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "food id not found"})
+	}
+	selected_order_item.Unit_price = food.Price * sizeMultiplier[selected_order_item.Quantity]
 
 	result := h.DB.Save(&selected_order_item)
 	if result.Error != nil {
