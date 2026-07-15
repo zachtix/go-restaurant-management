@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"restaurant-management/middleware"
 	model "restaurant-management/models"
 	"strconv"
 
@@ -10,11 +11,25 @@ import (
 )
 
 func (h *Controller) GetTables(c fiber.Ctx) error {
+	p := middleware.GetPagination(c)
+
+	var total int64
+	if err := h.DB.Model(&model.Table{}).Count(&total).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
 	var tables []model.Table
 	if err := h.DB.Find(&tables).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
-	return c.JSON(fiber.Map{"message": "ok", "data": tables})
+	return c.JSON(fiber.Map{
+		"message":    "ok",
+		"data":       tables,
+		"page":       p.Page,
+		"limit":      p.Limit,
+		"total":      total,
+		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+	})
 }
 func (h *Controller) GetTable(c fiber.Ctx) error {
 	table_id, err := strconv.Atoi(c.Params("table_id"))

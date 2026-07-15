@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"restaurant-management/middleware"
 	model "restaurant-management/models"
 	"strconv"
 	"time"
@@ -11,6 +12,8 @@ import (
 )
 
 func (h *Controller) GetOrders(c fiber.Ctx) error {
+	p := middleware.GetPagination(c)
+
 	tableID := fiber.Query[int](c, "table_id")
 	open := fiber.Query[bool](c, "open")
 
@@ -24,12 +27,24 @@ func (h *Controller) GetOrders(c fiber.Ctx) error {
 		)
 	}
 
-	var orders []model.Order
-	if err := query.Find(&orders).Error; err != nil {
+	var total int64
+	if err := query.Count(&total).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "ok", "data": orders})
+	var orders []model.Order
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&orders).Error; err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	return c.JSON(fiber.Map{
+		"message":    "ok",
+		"data":       orders,
+		"page":       p.Page,
+		"limit":      p.Limit,
+		"total":      total,
+		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+	})
 }
 func (h *Controller) GetOrder(c fiber.Ctx) error {
 	order_id, err := strconv.Atoi(c.Params("order_id"))

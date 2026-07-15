@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"restaurant-management/helper"
+	"restaurant-management/middleware"
 	model "restaurant-management/models"
 	"strconv"
 
@@ -12,12 +13,26 @@ import (
 )
 
 func (h *Controller) GetUsers(c fiber.Ctx) error {
+	p := middleware.GetPagination(c)
+
+	var total int64
+	if err := h.DB.Model(&model.User{}).Count(&total).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
 	var users []model.User
 	if err := h.DB.Find(&users).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "ok", "data": users})
+	return c.JSON(fiber.Map{
+		"message":    "ok",
+		"data":       users,
+		"page":       p.Page,
+		"limit":      p.Limit,
+		"total":      total,
+		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+	})
 }
 func (h *Controller) GetUser(c fiber.Ctx) error {
 	id, err := strconv.Atoi(c.Params("user_id"))
