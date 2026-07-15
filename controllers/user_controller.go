@@ -15,9 +15,11 @@ import (
 func (h *Controller) GetUsers(c fiber.Ctx) error {
 	p := middleware.GetPagination(c)
 
-	var total int64
-	if err := h.DB.Model(&model.User{}).Count(&total).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	query := h.DB.Model(&model.User{})
+
+	total, totalPage, err := helper.CountTotal(query, p.Limit)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	var users []model.User
@@ -31,7 +33,7 @@ func (h *Controller) GetUsers(c fiber.Ctx) error {
 		"page":       p.Page,
 		"limit":      p.Limit,
 		"total":      total,
-		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+		"total_page": totalPage,
 	})
 }
 func (h *Controller) GetUser(c fiber.Ctx) error {

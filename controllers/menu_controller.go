@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
 	"strconv"
@@ -13,13 +14,15 @@ import (
 func (h *Controller) GetMenus(c fiber.Ctx) error {
 	p := middleware.GetPagination(c)
 
-	var total int64
-	if err := h.DB.Model(&model.Menu{}).Count(&total).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	query := h.DB.Model(&model.Menu{})
+
+	total, totalPage, err := helper.CountTotal(query, p.Limit)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	var menus []model.Menu
-	if err := h.DB.Limit(p.Limit).Offset(p.Offset).Find(&menus).Error; err != nil {
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&menus).Error; err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 	return c.JSON(fiber.Map{
@@ -28,7 +31,7 @@ func (h *Controller) GetMenus(c fiber.Ctx) error {
 		"page":       p.Page,
 		"limit":      p.Limit,
 		"total":      total,
-		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+		"total_page": totalPage,
 	})
 }
 func (h *Controller) GetMenu(c fiber.Ctx) error {

@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
 	"strconv"
@@ -13,9 +14,11 @@ import (
 func (h *Controller) GetOrderItems(c fiber.Ctx) error {
 	p := middleware.GetPagination(c)
 
-	var total int64
-	if err := h.DB.Model(&model.OrderItem{}).Count(&total).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	query := h.DB.Model(&model.OrderItem{})
+
+	total, totalPage, err := helper.CountTotal(query, p.Limit)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	var order_items []model.OrderItem
@@ -28,7 +31,7 @@ func (h *Controller) GetOrderItems(c fiber.Ctx) error {
 		"page":       p.Page,
 		"limit":      p.Limit,
 		"total":      total,
-		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+		"total_page": totalPage,
 	})
 }
 
@@ -49,16 +52,32 @@ func (h *Controller) GetOrderItem(c fiber.Ctx) error {
 }
 
 func (h *Controller) GetOrderItemByOrder(c fiber.Ctx) error {
+	p := middleware.GetPagination(c)
+
+	query := h.DB.Model(&model.OrderItem{})
+
+	total, totalPage, err := helper.CountTotal(query, p.Limit)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
+	}
+
 	order_id, err := strconv.Atoi(c.Params("order_id"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	var order_items []model.OrderItem
-	if err := h.DB.Find(&order_items, "order_id = ?", order_id).Error; err != nil {
+	if err := query.Limit(p.Limit).Offset(p.Offset).Find(&order_items, "order_id = ?", order_id).Error; err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
-	return c.JSON(fiber.Map{"message": "ok", "data": order_items})
+	return c.JSON(fiber.Map{
+		"message":    "ok",
+		"data":       order_items,
+		"page":       p.Page,
+		"limit":      p.Limit,
+		"total":      total,
+		"total_page": totalPage,
+	})
 }
 
 func (h *Controller) CreateOrderItem(c fiber.Ctx) error {

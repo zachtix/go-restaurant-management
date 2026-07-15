@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"restaurant-management/helper"
 	"restaurant-management/middleware"
 	model "restaurant-management/models"
 	"strconv"
@@ -27,8 +28,8 @@ func (h *Controller) GetOrders(c fiber.Ctx) error {
 		)
 	}
 
-	var total int64
-	if err := query.Count(&total).Error; err != nil {
+	total, totalPage, err := helper.CountTotal(query, p.Limit)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": err.Error()})
 	}
 
@@ -43,7 +44,7 @@ func (h *Controller) GetOrders(c fiber.Ctx) error {
 		"page":       p.Page,
 		"limit":      p.Limit,
 		"total":      total,
-		"total_page": (total + int64(p.Limit) - 1) / int64(p.Limit),
+		"total_page": totalPage,
 	})
 }
 func (h *Controller) GetOrder(c fiber.Ctx) error {
