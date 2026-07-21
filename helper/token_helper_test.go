@@ -1,12 +1,15 @@
 package helper
 
 import (
+	"os"
 	model "restaurant-management/models"
 	"testing"
 )
 
 func TestGenerateAndVerify(t *testing.T) {
 	secret := "jwt-secret"
+	secret = os.Getenv("SECRET_ACCESS")
+
 	user := model.User{
 		Email:      "test@mail.com",
 		First_name: "John",
